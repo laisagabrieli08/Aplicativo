@@ -1,0 +1,142 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Jogo da Velha',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: const JogoDaVelha(),
+    );
+  }
+}
+
+class JogoDaVelha extends StatefulWidget {
+  const JogoDaVelha({super.key});
+
+  @override
+  State<JogoDaVelha> createState() => _JogoDaVelhaState();
+}
+
+class _JogoDaVelhaState extends State<JogoDaVelha> {
+  List<String> tabuleiro = List.generate(9, () => '');  // Representa as casas do jogo
+  String _jogadorAtual = 'X';  // Jogador atual
+  String _mensagem = '';  // Mensagem de vitória ou empate
+
+  // Função para verificar vitória
+  bool _verificarVitoria(String jogador) {
+    // Linhas, colunas e diagonais
+    final vitoria = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8], // Linhas
+      [0, 3, 6], [1, 4, 7], [2, 5, 8], // Colunas
+      [0, 4, 8], [2, 4, 6], // Diagonais
+    ];
+
+    for (var linha in vitoria) {
+      if (_tabuleiro[linha[0]] == jogador &&
+          _tabuleiro[linha[1]] == jogador &&
+          _tabuleiro[linha[2]] == jogador) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // Função para verificar empate
+  bool _verificarEmpate() {
+    return _tabuleiro.every((casa) => casa.isNotEmpty);
+  }
+
+  // Função para jogar
+  void _jogar(int index) {
+    setState(() {
+      if (_tabuleiro[index].isEmpty && _mensagem.isEmpty) {
+        _tabuleiro[index] = _jogadorAtual;
+        if (_verificarVitoria(_jogadorAtual)) {
+          _mensagem = 'Jogador $_jogadorAtual Venceu!';
+        } else if (_verificarEmpate()) {
+          _mensagem = 'Empate!';
+        } else {
+          _jogadorAtual = _jogadorAtual == 'X' ? 'O' : 'X';  // Troca o jogador
+        }
+      }
+    });
+  }
+
+  // Função para reiniciar o jogo
+  void _reiniciarJogo() {
+    setState(() {
+      tabuleiro = List.generate(9, () => '');
+      _mensagem = '';
+      _jogadorAtual = 'X';
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Jogo da Velha'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Mensagem de vitória ou empate
+            Text(
+              _mensagem.isEmpty ? 'Jogador $_jogadorAtual' : _mensagem,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            // Grid de botões para o tabuleiro
+            GridView.builder(
+              shrinkWrap: true,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+              ),
+              itemCount: 9,
+              itemBuilder: (context, index) {
+                return ElevatedButton(
+                  onPressed: () => _jogar(index),
+                  child: Text(
+                    _tabuleiro[index],
+                    style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.all(40),
+                    primary: Colors.white,
+                    onPrimary: Colors.black,
+                    side: BorderSide(color: Colors.black, width: 2),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 20),
+            // Botão de reiniciar jogo
+            ElevatedButton(
+              onPressed: _reiniciarJogo,
+              child: const Text('Reiniciar Jogo'),
+              style: ElevatedButton.styleFrom(
+                primary: Colors.blue,
+                padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                textStyle: const TextStyle(fontSize: 20),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
